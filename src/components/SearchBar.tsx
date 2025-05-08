@@ -8,11 +8,11 @@ interface SearchBarProps {
 
 export function SearchBar({ filters, onFilterChange }: SearchBarProps) {
   return (
-    <div className="w-full bg-white shadow-md shadow-gray-200 p-6 mt-6 rounded-xl">
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-6">
+    <div className="w-full bg-white shadow-[0px_0px_8px_rgba(0,0,0,0.1)] p-4 md:p-6 mt-6 rounded-xl">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-6">
         {/* Search by title */}
-        <div className="flex items-center flex-1">
-          <SearchIcon className="w-5 h-5 text-[#686868] mr-6" />
+        <div className="flex items-center flex-1 border-b md:border-b-0 pb-3 md:pb-0">
+          <SearchIcon className="w-5 h-5 text-[#686868] mr-4 md:mr-6 flex-shrink-0" />
           <input
             type="text"
             placeholder="Search By Job Title, Role"
@@ -22,12 +22,12 @@ export function SearchBar({ filters, onFilterChange }: SearchBarProps) {
           />
         </div>
 
-        {/* Vertical divider */}
+        {/* Vertical divider - only visible on desktop */}
         <div className="hidden md:block w-px h-12 bg-[#E5E5E5]" />
 
         {/* Location filter */}
-        <div className="flex items-center flex-1">
-          <img src="/location.png" alt="Location" className="w-[18px] h-[23px] mr-6" />
+        <div className="flex items-center flex-1 border-b md:border-b-0 pb-3 md:pb-0">
+          <img src="/location.png" alt="Location" className="w-[18px] h-[23px] mr-4 md:mr-6 flex-shrink-0" />
           <select
             className="w-full border-none text-[#686868] font-medium focus:outline-none appearance-none bg-transparent"
             value={filters.location}
@@ -40,12 +40,12 @@ export function SearchBar({ filters, onFilterChange }: SearchBarProps) {
           <ChevronDownIcon className="w-6 h-6 text-[#686868] flex-shrink-0 ml-2" />
         </div>
 
-        {/* Vertical divider */}
+        {/* Vertical divider - only visible on desktop */}
         <div className="hidden md:block w-px h-12 bg-[#E5E5E5]" />
 
         {/* Job type filter */}
-        <div className="flex items-center flex-1">
-        <UserIcon className="w-5 h-5 mr-6 text-[#686868]" />
+        <div className="flex items-center flex-1 border-b md:border-b-0 pb-3 md:pb-0">
+          <UserIcon className="w-5 h-5 mr-4 md:mr-6 text-[#686868] flex-shrink-0" />
           <select
             className="w-full border-none text-[#686868] font-medium focus:outline-none appearance-none bg-transparent"
             value={filters.jobType}
@@ -59,11 +59,11 @@ export function SearchBar({ filters, onFilterChange }: SearchBarProps) {
           <ChevronDownIcon className="w-6 h-6 text-[#686868] flex-shrink-0 ml-2" />
         </div>
 
-        {/* Vertical divider */}
+        {/* Vertical divider - only visible on desktop */}
         <div className="hidden md:block w-px h-12 bg-[#E5E5E5]" />
 
         {/* Salary range */}
-        <div className="flex flex-col w-full md:w-[264px]">
+        <div className="flex flex-col w-full md:w-[264px] pt-2 md:pt-0">
           <div className="flex justify-between mb-2">
             <span className="font-bold text-[#222222] text-base">Salary Per Month</span>
             <span className="font-bold text-[#222222] text-base">
