@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { Navbar } from "../components/Navbar";
 import { SearchBar } from "../components/SearchBar";
@@ -8,6 +8,7 @@ import { Job, JobFilters } from "../types/job";
 
 export function HomePage() {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [filters, setFilters] = useState<JobFilters>({
     title: "",
@@ -16,45 +17,19 @@ export function HomePage() {
     salaryRange: [50000, 80000] as [number, number],
   });
 
+  // Fetch all jobs once on component mount
   useEffect(() => {
     async function fetchJobs() {
       setLoading(true);
       try {
         const jobsRef = collection(db, "jobs");
-        
-        // Start with a base query
-        let q = query(jobsRef);
-        
-        // Add filters if they exist
-        if (filters.title) {
-          q = query(q, where("title", ">=", filters.title));
-        }
-        if (filters.location && filters.location !== "") {
-          q = query(q, where("location", "==", filters.location));
-        }
-        if (filters.jobType && filters.jobType !== "") {
-          q = query(q, where("jobType", "==", filters.jobType));
-        }
-        
-        // Note: Firebase requires composite indexes for multiple inequality filters
-        // So we'll apply salary filtering in JavaScript after fetching
-        
-        // Add ordering by createdAt to get most recent jobs first
-        q = query(q, orderBy("createdAt", "desc"));
-        
+        const q = query(jobsRef, orderBy("createdAt", "desc"));
         const snapshot = await getDocs(q);
-        let jobsData = snapshot.docs.map(doc => ({
+        
+        const jobsData = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         } as Job));
-        
-        // Apply salary range filtering in JavaScript
-        if (filters.salaryRange) {
-          jobsData = jobsData.filter(job => 
-            job.salaryMax >= (filters.salaryRange?.[0] ?? Infinity) && 
-            job.salaryMax <= (filters.salaryRange?.[1] ?? Infinity)
-          );
-        }
         
         setJobs(jobsData);
       } catch (error) {
@@ -65,7 +40,42 @@ export function HomePage() {
     }
 
     fetchJobs();
-  }, [filters]);
+  }, []);
+
+  // Apply filters client-side whenever filters or jobs change
+  useEffect(() => {
+    if (jobs.length === 0) return;
+
+    let result = [...jobs];
+    
+    // Filter by title
+    if (filters.title.trim()) {
+      const titleLower = filters.title.toLowerCase();
+      result = result.filter(job => 
+        job.title.toLowerCase().includes(titleLower)
+      );
+    }
+    
+    // Filter by location
+    if (filters.location) {
+      result = result.filter(job => job.location === filters.location);
+    }
+    
+    // Filter by job type
+    if (filters.jobType) {
+      result = result.filter(job => job.jobType === filters.jobType);
+    }
+    
+    // Filter by salary range
+    if (filters.salaryRange) {
+      result = result.filter(job => 
+        job.salaryMin >= filters.salaryRange[0] && 
+        job.salaryMin <= filters.salaryRange[1]
+      );
+    }
+    
+    setFilteredJobs(result);
+  }, [jobs, filters]);
 
   return (
     <div className="min-h-screen bg-[#FBFBFF]">
@@ -77,13 +87,13 @@ export function HomePage() {
           <div className="flex justify-center items-center py-16">
             <p className="text-lg">Loading jobs...</p>
           </div>
-        ) : jobs.length === 0 ? (
+        ) : filteredJobs.length === 0 ? (
           <div className="flex justify-center items-center py-16">
             <p className="text-lg">No jobs found matching your criteria.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 py-8">
-            {jobs.map((job, index) => (
+            {filteredJobs.map((job, index) => (
               <JobCard key={job.id} job={job} index={index} />
             ))}
           </div>

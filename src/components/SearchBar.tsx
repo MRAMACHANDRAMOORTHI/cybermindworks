@@ -1,5 +1,6 @@
 import { SearchIcon, ChevronDownIcon, UserIcon } from "lucide-react";
 import { JobFilters } from "../types/job";
+import { useState, useEffect } from "react";
 
 interface SearchBarProps {
   filters: JobFilters;
@@ -7,6 +8,34 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ filters, onFilterChange }: SearchBarProps) {
+  const [minSalary, setMinSalary] = useState<number>(filters.salaryRange[0]);
+  const [maxSalary, setMaxSalary] = useState<number>(filters.salaryRange[1]);
+
+  // Update the salary range when slider changes
+  const handleSalaryChange = (value: number) => {
+    setMaxSalary(value);
+    onFilterChange({
+      ...filters,
+      salaryRange: [minSalary, value],
+    });
+  };
+
+  // Update minimum salary (with validation)
+  const handleMinSalaryChange = (value: number) => {
+    const newMin = Math.min(value, maxSalary - 10000); // Ensure minimum is at least 10k less than maximum
+    setMinSalary(newMin);
+    onFilterChange({
+      ...filters,
+      salaryRange: [newMin, maxSalary],
+    });
+  };
+
+  // Initialize sliders with filter values
+  useEffect(() => {
+    setMinSalary(filters.salaryRange[0]);
+    setMaxSalary(filters.salaryRange[1]);
+  }, []);
+
   return (
     <div className="w-full bg-white shadow-[0px_0px_8px_rgba(0,0,0,0.1)] p-4 md:p-6 mt-6 rounded-xl">
       <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 md:gap-6">
@@ -67,23 +96,29 @@ export function SearchBar({ filters, onFilterChange }: SearchBarProps) {
           <div className="flex justify-between mb-2">
             <span className="font-bold text-[#222222] text-base">Salary Per Month</span>
             <span className="font-bold text-[#222222] text-base">
-              ₹{(filters.salaryRange?.[0] ?? 50000) / 1000}k - ₹{(filters.salaryRange?.[1] ?? 80000) / 1000}k
+              ₹{minSalary / 1000}k - ₹{maxSalary / 1000}k
             </span>
           </div>
-          <input
-            type="range"
-            min="50000"
-            max="80000"
-            step="1000"
-            className="w-full accent-[#A128FF]"
-            value={filters.salaryRange?.[1] ?? 80000}
-            onChange={(e) =>
-              onFilterChange({
-                ...filters,
-                salaryRange: [50000, parseInt(e.target.value)],
-              })
-            }
-          />
+          <div className="flex flex-col gap-2">
+            <input
+              type="range"
+              min="10000"
+              max="200000"
+              step="5000"
+              className="w-full accent-[#A128FF]"
+              value={minSalary}
+              onChange={(e) => handleMinSalaryChange(parseInt(e.target.value))}
+            />
+            <input
+              type="range"
+              min={minSalary + 10000}
+              max="500000"
+              step="5000"
+              className="w-full accent-[#A128FF]"
+              value={maxSalary}
+              onChange={(e) => handleSalaryChange(parseInt(e.target.value))}
+            />
+          </div>
         </div>
       </div>
     </div>
