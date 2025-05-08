@@ -6,17 +6,30 @@ interface JobCardProps {
   index: number;
 }
 
+// Fixed the logo mapping - corrected the incorrect paths
 const logoMapping: Record<string, string> = {
   amazon: "/amazon.png",
-  tesla: "/swiggy.png",
-  swiggy: "/tesla.png",
+  tesla: "/tesla.png",
+  swiggy: "/swiggy.png",
 };
 
 export function JobCard({ job, index }: JobCardProps) {
-  const defaultLogos = ["/amazon.png", "/swiggy.png", "/tesla.png"];
-  const logoSrc =
-    logoMapping[job.company?.toLowerCase()] ||
-    defaultLogos[index % defaultLogos.length];
+  const defaultLogos = ["/amazon.png", "/tesla.png", "/swiggy.png"];
+  
+  // Use the company name to find the logo, defaulting to the cycled logo by index
+  const logoSrc = job.company?.toLowerCase() 
+    ? logoMapping[job.company.toLowerCase()] || defaultLogos[index % defaultLogos.length]
+    : defaultLogos[index % defaultLogos.length];
+
+  // Format salary display - convert to LPA (Lakhs Per Annum)
+  const formatSalary = (salary: number) => {
+    return salary >= 100000 
+      ? `${(salary / 100000).toFixed(1)} LPA` 
+      : `${salary / 1000}K`;
+  };
+
+  // Format post time display
+  const postedTime = job.postedTime || "24h Ago";
 
   return (
     <div className="w-full md:w-[316px] bg-white rounded-xl shadow-[0px_0px_14px_#d3d3d326] p-4 relative" style={{ minHeight: "380px" }}>
@@ -24,12 +37,12 @@ export function JobCard({ job, index }: JobCardProps) {
         <div className="w-[83px] h-[82px] rounded-[13.18px] overflow-hidden bg-gradient-to-b from-[#FEFEFD] to-[#F1F1F1] border border-white shadow-[0px_0px_10.25px_#94949440] flex items-center justify-center">
           <img
             src={logoSrc}
-            alt={job.company}
+            alt={job.company || "Company Logo"}
             className="w-[66px] h-[66px] object-contain"
           />
         </div>
         <span className="bg-[#AFD8FF] text-black px-2.5 py-1 rounded-[10px] text-sm font-medium">
-          {job.postedTime || "24h Ago"}
+          {postedTime}
         </span>
       </div>
 
@@ -53,13 +66,13 @@ export function JobCard({ job, index }: JobCardProps) {
         <div className="flex items-center gap-1">
           <DollarSignIcon className="h-4 w-4 text-[#5A5A5A]" />
           <span className="font-medium text-[#5A5A5A] text-base">
-            {job.salaryMax} LPA
+            {formatSalary(job.salaryMax)}
           </span>
         </div>
       </div>
 
       <div className="mt-5 mb-16">
-        <p className="font-medium text-[#555555] text-sm leading-[1.5] break-words whitespace-normal">
+        <p className="font-medium text-[#555555] text-sm leading-[1.5] break-words line-clamp-4">
           {job.description}
         </p>
       </div>
